@@ -1,0 +1,51 @@
+# Read my measurements (wind has been merged already)
+bertha <- read.csv ("nh4wind2.csv", header=T)
+
+# Read ship data
+shipdata <- read.csv ("Small.csv", header=T)
+
+# Merge by data with all ship data. The two data sets require the sample temporal vairation, merging them will remove data points that do not match up (hence a loss of resolution if your data sets do not match up in a specified variable, in this case: time)
+Alldata<- merge(bertha,  shipdata, by.x = "Time", by.y = "Time")
+
+# Assign variables
+nh4 <- bertha$NH4
+time <- bertha$Time
+wind <- Alldata$Wind.Speed
+relwind <- Alldata$Wind.Speed..relative #Relative wind speed
+heading <- Alldata$Orientation..Heading # Ships heading/orientation
+winddir <- Alldata$Wind.direction
+winddirrel <- Alldata$Wind.direction..relative # Relative wind direction
+lat <- Alldata$Latitude
+lon <- Alldata$Longitude
+bath <- Alldata$Bathymetry
+veleast <- Alldata$Eastward.Velocity
+velnorth <- Alldata$Northward.Velocity
+
+#Plot
+plot(time, nh4)
+lines(time, nh4, type = "l", col="black")
+
+par(new=T)
+plot(time, wind, axes=F, col="red")
+lines(time, wind, type = "l", col="green")
+
+grid(nx = 15, ny = NULL, col = "red", lty = "dotted",
+     lwd = par("lwd"), equilogs = TRUE)
+
+#cross-correlation
+ccf(nh4, wind, 280)
+#  (title("Corresponding lag between surface NH4+ and Wind Speed"),
+grid(nx = NULL, ny = NULL, col = "red", lty = "dotted",
+     lwd = par("lwd"), equilogs = TRUE)
+
+axis(1, at=seq(10:100, by=10))
+
+fvalues <- ccf(nh4, wind, 280)
+
+ccfcov <- ccf(nh4, wind, lag.max = 260, type = c("covariance"), plot = TRUE)
+ccycor <- ccf(nh4, wind, lag.max = 260, type = c("correlation"), plot = TRUE)
+
+acf(nh4, wind)
+
+#Cross correlation, http://www.stat.pitt.edu/stoffer/tsa3/R_toot.htm 
+lag2.plot(nh4, wind)
